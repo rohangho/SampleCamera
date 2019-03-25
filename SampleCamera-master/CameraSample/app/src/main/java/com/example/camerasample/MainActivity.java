@@ -39,6 +39,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -55,6 +57,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -81,6 +84,8 @@ public class MainActivity extends AppCompatActivity {
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
 
+    int d=0;
+
 
 
 
@@ -102,8 +107,21 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        new CountDownTimer(999999999, 5000) {
+
+            public void onTick(long millisUntilFinished) {
+                takePicture();
+            }
+
+            public void onFinish() {
+
+            }
+        }.start();
+
+
 
     }
+
 
     TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
         @Override
@@ -215,14 +233,21 @@ public class MainActivity extends AppCompatActivity {
                 }
                 private void save(byte[] bytes) throws IOException {
 
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    //DatabaseReference myRef = database.getReference();
+
                     FirebaseStorage storage;
                     StorageReference storageReference;
                     storage = FirebaseStorage.getInstance();
                     storageReference = storage.getReference();
-                    StorageReference ref = storageReference.child("cam");
+                    String a=UUID.randomUUID().toString();
+                    DatabaseReference myRef = database.getReference("cam"+a);
+                    myRef.setValue("cam"+a);
+                    StorageReference ref = storageReference.child("Bot"+"/"+"cam"+a);
                     ref.putBytes(bytes).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            Log.e("Hii",taskSnapshot.getMetadata().getPath());
                             Toast.makeText(getApplicationContext(), "Successful", Toast.LENGTH_SHORT).show();
                         }
                     }).addOnFailureListener(new OnFailureListener() {
@@ -231,6 +256,7 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "Unsuccessful Addition", Toast.LENGTH_SHORT).show();
                         }
                     });
+                    d=1;
 
 
 
